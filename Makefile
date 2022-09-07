@@ -13,3 +13,5 @@ run:
 
 clean:
 	rm $(OUTPUT)
+
+purge: clean
