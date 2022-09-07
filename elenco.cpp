@@ -1,12 +1,19 @@
 
-
+#include <unistd.h>
 #include <bits/stdc++.h>
 using namespace std;
 #define oo 1987654321
 
+int L, M, N;
 vector<int> Precos;
 vector<vector<int>> Grupos;
 int Required;
+
+
+// controla o corte por otimalidade
+bool Optimality_Cut = true;
+// controla o corte por viabilidade
+bool Viability_Cut = true;
 
 int opt = oo;
 vector<bool> x_opt;
@@ -20,70 +27,65 @@ int get_cost(vector<bool>& actors, int to)
     return sum;
 }
 
-// conta quantos atores foram escalados
-int count_actors(vector<bool> actors)
-{
-    int cnt = 0;
-    for (bool a : actors)
-        if (a)
-            cnt++;
-    return cnt;
-}
 
-
-int bounding_1(vector<bool> actors, int from)
+int bounding_1(vector<bool> actors, int from, int count)
 {
     int sum = get_cost(actors, from);
 
     int min = *min_element(next(Precos.begin(), from), Precos.end());
 
-    return sum + min * (Required - count_actors(actors));
+    return sum + min * (Required - count);
 }
 
 
-int bounding_2(vector<bool> actors, int from)
+int bounding_2(vector<bool> actors, int from, int count)
 {
     int sum = get_cost(actors, from);
 
     int min = *min_element(next(Precos.begin(), from), Precos.end());
 
-    return sum + min * (Required - count_actors(actors));
+    return sum + min * (Required - count);
 }
 
 
-// verifica se todos os grupos foram cobertos e se há actors o suficiente
-bool is_covered(vector<bool> cov_groups, vector<bool> actors)
+// verifica se todos os grupos foram cobertos
+bool is_covered(vector<bool> cover)
 {
-    for (bool g : cov_groups)
+    for (bool g : cover)
         if (!g)
             return false;            
-    return count_actors(actors) == Required;
+    return true;
+}
+
+
+bool is_coverable(vector<bool>& cover, int from)
+{
+    vector<bool> to_cover(cover);
+    for(int i = from; i < L; i++)
+        for(int& x : Grupos[i])
+            to_cover[x] = true;
+    return is_covered(to_cover);
 }
 
 
 // testa se há solucao viável
-bool is_viable(int l, int m, int n)
+bool is_viable()
 {
     // testa se é possivel cobrir todos os grupos
-    vector<bool> to_cover(l, false);
-    for(vector<int>& g : Grupos)
-        for(int& x : g)
-            to_cover[x] = true;
-    for(bool c : to_cover)
-        if (!c)
-            return false;
+    vector<bool> to_cover (L, false);
+    if (!is_coverable(to_cover, 0));
 
     // testa se é possível atribuir um ator pra cada personagem
-    return n <= m;
+    return N <= M;
 }
 
-int (*bounding)(vector<bool>, int) = bounding_1;
+int (*bounding)(vector<bool>, int, int) = bounding_2;
 
-void solve(int i, int n, vector<bool> actors, vector<bool> covered)
+void solve(int i, vector<bool> actors, int count, vector<bool> covered)
 {
-    if (i > n) {
-        if (is_covered(covered, actors)) {
-            int cost = get_cost(actors, actors.size());
+    if (i > N || count == Required) {
+        if (is_covered(covered) && count == Required) {
+            int cost = get_cost(actors, i);
             if (cost < opt) {
                 opt = cost;
                 x_opt = actors;
@@ -91,36 +93,65 @@ void solve(int i, int n, vector<bool> actors, vector<bool> covered)
         }
     }
     else {
-        if (bounding(actors, i+1) < opt) {
+        if (Optimality_Cut && bounding(actors, i+1, count) >= opt)
+            return;
+        else {
             // coloca o ator
-            vector<bool> actors_copy (actors);
-            vector<bool> covered_copy (covered);
+            if (Viability_Cut && count < Required) {
+                vector<bool> actors_copy (actors);
+                vector<bool> covered_copy (covered);
 
-            actors_copy[i] = true;
+                actors_copy[i] = true;
 
-            for(int& g : Grupos[i])
-                covered_copy[g] = true;
+                for(int& g : Grupos[i])
+                    covered_copy[g] = true;
 
-            solve(i+1, n, actors_copy, covered_copy);
-
+                solve(i+1, actors_copy, count + 1, covered_copy);
+            }
+            
             // não coloca o ator
-            solve(i+1, n, actors, covered);
+            solve(i+1, actors, count, covered);
         }
     }
 }
 
 
-int main() {
-    int l, m, n;
+void init(int argc, char * argv[])
+{
+    int opt;
+    while((opt = getopt(argc, argv, "foa")) != -1)
+    switch(opt)
+    {
+    case 'f':
+        // desliga corte por viabilidade
+        Viability_Cut = false;
+        break;
+    case 'o':
+        // desliga cortes por otimalidade
+        Optimality_Cut = false;
+        break;
+    case 'a':
+        // usa funcao limitante do professor
+        bounding = bounding_1;
+        break;
+    default:
+        break;
+    };
+}
 
-    cin >> l >> m >> n;
 
-    Precos = vector<int> (m);
-    Grupos = vector<vector<int>> (m);
-    Required = n;
+
+int main(int argc, char * argv[]) {
+    cin.tie(0);
+
+    cin >> L >> M >> N;
+
+    Precos = vector<int> (M);
+    Grupos = vector<vector<int>> (M);
+    Required = N;
 
     int v, s, g;
-    for(int i = 0; i < m; i++) {
+    for(int i = 0; i < M; i++) {
         cin >> v >> s;
         Precos[i] = v;
         while(s--) {
@@ -129,15 +160,15 @@ int main() {
         }
     }
 
-    if (!is_viable(l, m, n)) {
+    if (!is_viable()) {
         cout << "Inviável\n";
         exit(0);
     }
 
-    vector<bool> covered (l, false);
-    vector<bool> actors (m, false);
+    vector<bool> covered (L, false);
+    vector<bool> actors (M, false);
 
-    solve(0, n, actors, covered);
+    solve(0, actors, 0, covered);
 
     for(int j = 0; j < x_opt.size(); j++)
         if (x_opt[j])
