@@ -5,8 +5,8 @@ using namespace std;
 #define oo 1987654321
 
 int L, M, N;
-struct Ator {int preco, id;};
-vector<int> Precos;
+struct Ator {int id, preco; vector<int> grupos;};
+vector<Ator> Atores;
 vector<vector<int>> Grupos;
 int Required;
 
@@ -24,7 +24,7 @@ int get_cost(vector<bool>& actors, int to)
     int sum = 0;
     for(int i = 0; i < to; i++)
         if (actors[i])
-            sum += Precos[i];
+            sum += Atores[i].preco;
     return sum;
 }
 
@@ -33,7 +33,7 @@ int bounding_1(vector<bool> actors, int from, int count)
 {
     int sum = get_cost(actors, from);
 
-    int min = *min_element(next(Precos.begin(), from), Precos.end());
+    int min = Atores[from].preco;
 
     return sum + min * (Required - count);
 }
@@ -43,11 +43,8 @@ int bounding_2(vector<bool> actors, int from, int count)
 {
     int sum = get_cost(actors, from);
 
-    vector<int> precos_cpy = Precos;
-    sort(next(precos_cpy.begin(), from), precos_cpy.end());
-
     for(int i = 0; i < (Required - count); i++)
-        sum += precos_cpy[from + i];
+        sum += Atores[from + i].preco;
 
     return sum;
 }
@@ -93,7 +90,7 @@ int Cuts = 0;
 int Nodes_Count = 0;
 
 
-// funcao de bounding
+// funcao de bounding a ser utilizada
 int (*bounding)(vector<bool>, int, int) = bounding_2;
 
 void solve(int i, int count, vector<bool> actors, vector<bool> covered)
@@ -178,14 +175,13 @@ int main(int argc, char * argv[]) {
 
     cin >> L >> M >> N;
 
-    Precos = vector<int> (M);
     Grupos = vector<vector<int>> (M);
     Required = N;
 
     int v, s, g;
     for(int i = 0; i < M; i++) {
         cin >> v >> s;
-        Precos[i] = v;
+        Atores.push_back({i, v});
         while(s--) {
             cin >> g;
             Grupos[i].push_back(--g);
@@ -197,6 +193,9 @@ int main(int argc, char * argv[]) {
         exit(0);
     }
 
+    // ordena o vetor de atores pelo preco do maior pro menor
+    sort(Atores.begin(), Atores.end(), [](Ator a, Ator b) {return a.preco < b.preco;});
+
     vector<bool> actors (M, false);
     vector<bool> covered (L, false);
 
@@ -204,10 +203,15 @@ int main(int argc, char * argv[]) {
     solve(0, 0, actors, covered);
     time = timestamp() - time;
 
+    // processa o x_opt
+    vector<int> out;
     for(int j = 0; j < x_opt.size(); j++)
         if (x_opt[j])
-            cout << j + 1 << ' ';
+            out.push_back(Atores[j].id + 1);
 
+    sort(out.begin(), out.end());
+
+    for(int& a : out) cout << a << ' ';
     cout << '\n' << opt << '\n';
 
     if (Generate_Report) {
