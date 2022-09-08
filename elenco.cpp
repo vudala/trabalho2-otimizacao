@@ -4,11 +4,12 @@
 using namespace std;
 #define oo 1987654321
 
-int L, M, N;
-struct Ator {int id, preco; vector<int> grupos;};
+int L, M, Required;
+struct Ator {
+    int id, preco;
+    vector<int> grupos;
+};
 vector<Ator> Atores;
-vector<vector<int>> Grupos;
-int Required;
 
 // controla o corte por otimalidade
 bool Optimality_Cut = true;
@@ -61,7 +62,7 @@ bool is_covered(vector<bool> to_cover) {
 bool is_coverable(vector<bool> covered, int from, int count)
 {
     for(int i = from; i < M && count < Required; i++, count++)
-        for(int& g : Grupos[i])
+        for(int& g : Atores[i].grupos)
             covered[g] = true;
 
     return is_covered(covered);
@@ -76,7 +77,7 @@ bool is_viable()
     if (!is_coverable(covered, 0, 0));
 
     // testa se é possível atribuir um ator pra cada personagem
-    return N <= M;
+    return Required <= M;
 }
 
 
@@ -97,7 +98,7 @@ void solve(int i, int count, vector<bool> actors, vector<bool> covered)
 {
     cout << i << ' ' << count << '\n';
     Nodes_Count += 1;
-    if (i > N || (Viability_Cut && count == Required)) {
+    if (i > M || (Viability_Cut && count == Required)) {
         if (count == Required && is_covered(covered)) {
             int cost = get_cost(actors, i);
             if (cost < opt) {
@@ -121,7 +122,7 @@ void solve(int i, int count, vector<bool> actors, vector<bool> covered)
                 // coloca o ator
                 actors[i] = 1;
                 vector<bool> cov_cpy (covered);
-                for(int& x : Grupos[i])
+                for(int& x : Atores[i].grupos)
                     cov_cpy[x] = true;
 
                 solve(i+1, count + 1, actors, cov_cpy);
@@ -173,10 +174,7 @@ double timestamp() {
 int main(int argc, char * argv[]) {
     init(argc, argv);
 
-    cin >> L >> M >> N;
-
-    Grupos = vector<vector<int>> (M);
-    Required = N;
+    cin >> L >> M >> Required;
 
     int v, s, g;
     for(int i = 0; i < M; i++) {
@@ -184,7 +182,7 @@ int main(int argc, char * argv[]) {
         Atores.push_back({i, v});
         while(s--) {
             cin >> g;
-            Grupos[i].push_back(--g);
+            Atores[i].grupos.push_back(--g);
         }
     }
 
