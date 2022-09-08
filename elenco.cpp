@@ -15,6 +15,9 @@ bool Optimality_Cut = true;
 // controla o corte por viabilidade
 bool Viability_Cut = true;
 
+// controla a geração de relatorio
+bool Generate_Report = false;
+
 int opt = oo;
 vector<bool> x_opt = {};
 
@@ -83,11 +86,12 @@ bool is_viable()
 
 int (*bounding)(vector<bool>, int, int) = bounding_2;
 
-int node_cnt = 0;
+int Cuts = 0;
+int Nodes_Count = 0;
 void solve(int i, int count, vector<bool> actors, vector<bool> covered)
 {
     cout << i << ' ' << count << '\n';
-    node_cnt += 1;
+    Nodes_Count += 1;
     if (i > N || (Viability_Cut && count == Required)) {
         if (count == Required && is_covered(covered)) {
             int cost = get_cost(actors, i);
@@ -98,15 +102,19 @@ void solve(int i, int count, vector<bool> actors, vector<bool> covered)
         }
     }
     else {
-        // coloca o ator
+        
+        // determina se é possivel
         bool colocar = false;
-        if (Viability_Cut && (count < Required && is_coverable(covered, i, count)))
+        if (Viability_Cut && is_coverable(covered, i, count))
             colocar = true;
 
-        if (Optimality_Cut && bounding(actors, i, count) >= opt)
+        if (Optimality_Cut && bounding(actors, i, count) >= opt) {
+            Cuts += 1;
             return;
+        }
         else {
             if (!Viability_Cut || colocar) {
+                // coloca o ator
                 actors[i] = 1;
                 vector<bool> cov_cpy (covered);
                 for(int& x : Grupos[i])
@@ -143,12 +151,19 @@ void init(int argc, char * argv[])
         break;
     case 'v':
         // gera relatorio
+        Generate_Report = true;
         break;
     default:
         break;
     };
 }
 
+
+double timestamp() {
+    struct timespec tp;
+    clock_gettime(CLOCK_MONOTONIC_RAW, &tp);
+    return((double)(tp.tv_sec*1.0e3 + tp.tv_nsec*1.0e-6));
+}
 
 
 int main(int argc, char * argv[]) {
@@ -178,7 +193,9 @@ int main(int argc, char * argv[]) {
     vector<bool> actors (M, false);
     vector<bool> covered (L, false);
 
+    double time = timestamp();
     solve(0, 0, actors, covered);
+    time = timestamp() - time;
 
     for(int j = 0; j < x_opt.size(); j++)
         if (x_opt[j])
@@ -186,5 +203,9 @@ int main(int argc, char * argv[]) {
 
     cout << '\n' << opt << '\n';
 
-    cout << node_cnt << '\n';
+    if (Generate_Report) {
+        cout << "\nTempo de execução: " << time << " ms\n";
+        cout << "Nodos percorridos: " << Nodes_Count << '\n';
+        cout << "Cortes por otimalidade: " << Cuts << '\n';
+    }
 }
