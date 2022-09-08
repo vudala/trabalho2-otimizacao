@@ -74,7 +74,8 @@ bool is_viable()
 {
     // testa se é possivel cobrir todos os grupos
     vector<bool> covered (L, false);
-    if (!is_coverable(covered, 0, 0));
+    if (!is_coverable(covered, 0, 0))
+        return false;
 
     // testa se é possível atribuir um ator pra cada personagem
     return Required <= M;
