@@ -5,6 +5,7 @@ using namespace std;
 #define oo 1987654321
 
 int L, M, N;
+struct Ator {int preco, id;};
 vector<int> Precos;
 vector<vector<int>> Grupos;
 int Required;
@@ -17,9 +18,6 @@ bool Viability_Cut = true;
 
 // controla a geração de relatorio
 bool Generate_Report = false;
-
-int opt = oo;
-vector<bool> x_opt = {};
 
 int get_cost(vector<bool>& actors, int to)
 {
@@ -77,17 +75,27 @@ bool is_coverable(vector<bool> covered, int from, int count)
 bool is_viable()
 {
     // testa se é possivel cobrir todos os grupos
-    vector<bool> actors (M, false);
-    if (!is_coverable(actors, 0, 0));
+    vector<bool> covered (L, false);
+    if (!is_coverable(covered, 0, 0));
 
     // testa se é possível atribuir um ator pra cada personagem
     return N <= M;
 }
 
-int (*bounding)(vector<bool>, int, int) = bounding_2;
 
+// valores otimos
+int opt = oo;
+vector<bool> x_opt = {};
+
+
+// informacoes sobre a execução
 int Cuts = 0;
 int Nodes_Count = 0;
+
+
+// funcao de bounding
+int (*bounding)(vector<bool>, int, int) = bounding_2;
+
 void solve(int i, int count, vector<bool> actors, vector<bool> covered)
 {
     cout << i << ' ' << count << '\n';
@@ -102,18 +110,17 @@ void solve(int i, int count, vector<bool> actors, vector<bool> covered)
         }
     }
     else {
-        
-        // determina se é possivel
-        bool colocar = false;
-        if (Viability_Cut && is_coverable(covered, i, count))
-            colocar = true;
+        // determina se deve cortar
+        bool cortar = false;
+        if (Viability_Cut && !is_coverable(covered, i, count))
+            cortar = true;
 
         if (Optimality_Cut && bounding(actors, i, count) >= opt) {
             Cuts += 1;
             return;
         }
         else {
-            if (!Viability_Cut || colocar) {
+            if (!Viability_Cut || !cortar) {
                 // coloca o ator
                 actors[i] = 1;
                 vector<bool> cov_cpy (covered);
@@ -121,11 +128,11 @@ void solve(int i, int count, vector<bool> actors, vector<bool> covered)
                     cov_cpy[x] = true;
 
                 solve(i+1, count + 1, actors, cov_cpy);
-            }
 
-            // não coloca o ator
-            actors[i] = 0;
-            solve(i+1, count, actors, covered);
+                // não coloca o ator
+                actors[i] = 0;
+                solve(i+1, count, actors, covered);
+            }
         }
     }
 }
