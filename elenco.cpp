@@ -76,8 +76,6 @@ void solve(int i, int count, vector<bool>& actors, vector<int> grupos)
 {
     Nodes_Count += 1;
 
-    cout << i << ' ' << count << '\n';
-
     if (i == M) {
         if (count == Required && is_covered(grupos)) {
             int cost = get_cost(actors, i);
@@ -88,7 +86,6 @@ void solve(int i, int count, vector<bool>& actors, vector<int> grupos)
         }
     }
     else {
-
         if (Viability_Cut && (Required - count > M - i || count > Required)) {
             V_Cuts += 1;
             return;

@@ -1,6 +1,6 @@
 # exemplo onde nossa funcao limitante é melhor que a do prof
 
-3 10 5
+3 10 9
 1 2
 1
 2
