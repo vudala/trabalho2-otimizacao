@@ -203,7 +203,7 @@ int main(int argc, char * argv[]) {
     sort(out.begin(), out.end());
 
     if (Generate_Report) {
-        cout << "Tempo de execução: " << time << " segundos\n";
+        cout << "Tempo de execução: " << time << " ms\n";
         cout << "Nodos percorridos: " << Nodes_Count << '\n';
         cout << "Cortes por otimalidade: " << O_Cuts << '\n';
         cout << "Cortes por viabilidade: " << V_Cuts << '\n';
