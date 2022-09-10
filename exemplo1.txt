@@ -1,0 +1,33 @@
+# exemplo onde nossa funcao limitante é melhor que a do prof
+
+3 10 5
+1 2
+1
+2
+2 2
+2
+3
+4 2
+1
+2
+8 2
+2
+3
+16 2
+1
+2
+32 2
+2
+3
+64 2
+1
+2
+128 2
+2
+3
+256 2
+1
+2
+512 2
+2
+3

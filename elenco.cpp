@@ -58,6 +58,13 @@ int bounding_2(vector<bool> actors, int from, int count)
 }
 
 
+bool is_covered(vector<int> grupos)
+{
+    for(int& x : grupos)
+        if (x <= 0) return false;
+    return true;
+}
+
 // valores otimos
 int opt = oo;
 vector<bool> x_opt = {};
@@ -65,12 +72,14 @@ vector<bool> x_opt = {};
 // funcao de bounding a ser utilizada
 int (*bounding)(vector<bool>, int, int) = bounding_2;
 
-void solve(int i, int count, vector<bool>& actors, vector<int> Grupos)
+void solve(int i, int count, vector<bool>& actors, vector<int> grupos)
 {
     Nodes_Count += 1;
 
+    cout << i << ' ' << count << '\n';
+
     if (i == M) {
-        if (count == Required) {
+        if (count == Required && is_covered(grupos)) {
             int cost = get_cost(actors, i);
             if (cost < opt) {
                 opt = cost;
@@ -86,10 +95,11 @@ void solve(int i, int count, vector<bool>& actors, vector<int> Grupos)
         }
 
         int bound = bounding(actors, i, count);
+
         if (!Optimality_Cut || bound < opt) {
             // coloca o ator
             actors[i] = 1;
-            solve(i+1, count + 1, actors, Grupos);
+            solve(i+1, count + 1, actors, grupos);
 
             // não coloca o ator
             if (!Optimality_Cut || bound < opt) {
@@ -97,13 +107,13 @@ void solve(int i, int count, vector<bool>& actors, vector<int> Grupos)
 
                 // verifica se não colocar o ator irá quebrar a viabilidade
                 for(int& x : Atores[i].grupos) {
-                    Grupos[x] -= 1;
-                    if (Viability_Cut && Grupos[x] == 0) {
+                    grupos[x] -= 1;
+                    if (Viability_Cut && grupos[x] == 0) {
                         V_Cuts += 1;
                         return;
                     }
                 }
-                solve(i+1, count, actors, Grupos);
+                solve(i+1, count, actors, grupos);
             }
             else
                 O_Cuts += 1;
@@ -156,7 +166,7 @@ int main(int argc, char * argv[]) {
 
     vector<int> Grupos (L, 0);
 
-     if (M < Required) {
+    if (M < Required) {
         cout << "Inviável\n";
         exit(0);
     }
@@ -193,12 +203,10 @@ int main(int argc, char * argv[]) {
     for(int j = 0; j < x_opt.size(); j++)
         if (x_opt[j])
             out.push_back(Atores[j].id + 1);
-
     sort(out.begin(), out.end());
 
-
     if (Generate_Report) {
-        cout << "Tempo de execução: " << time << " ms\n";
+        cout << "Tempo de execução: " << time << " segundos\n";
         cout << "Nodos percorridos: " << Nodes_Count << '\n';
         cout << "Cortes por otimalidade: " << O_Cuts << '\n';
         cout << "Cortes por viabilidade: " << V_Cuts << '\n';
