@@ -22,9 +22,6 @@ int O_Cuts = 0;
 bool Viability_Cut = true;
 int V_Cuts = 0;
 
-// controla a geração de relatorio
-bool Generate_Report = false;
-
 int get_cost(vector<bool>& actors, int to)
 {
     int sum = 0;
@@ -140,10 +137,6 @@ void init(int argc, char * argv[])
         // usa funcao limitante do professor
         bounding = bounding_dada;
         break;
-    case 'v':
-        // gera relatorio
-        Generate_Report = true;
-        break;
     default:
         break;
     };
@@ -210,12 +203,10 @@ int main(int argc, char * argv[]) {
             out.push_back(Atores[j].id + 1);
     sort(out.begin(), out.end());
 
-    if (Generate_Report) {
-        cout << "Tempo de execução: " << time << " ms\n";
-        cout << "Nodos percorridos: " << Nodes_Count << '\n';
-        cout << "Cortes por otimalidade: " << O_Cuts << '\n';
-        cout << "Cortes por viabilidade: " << V_Cuts << '\n';
-    }
+    cerr << "Tempo de execução: " << time << " ms\n";
+    cerr << "Nodos percorridos: " << Nodes_Count << '\n';
+    cerr << "Cortes por otimalidade: " << O_Cuts << '\n';
+    cerr << "Cortes por viabilidade: " << V_Cuts << '\n';
 
     for(int& a : out) cout << a << ' ';
     cout << '\n' << opt << '\n';

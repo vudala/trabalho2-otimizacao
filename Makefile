@@ -3,13 +3,10 @@
 CC=g++
 INPUT=elenco.cpp
 OUTPUT=elenco
-FLAGS=-g
+FLAGS=-std=c++17
 
 all:
 	$(CC) $(FLAGS) $(INPUT) -o $(OUTPUT)
-
-run:
-	./$(OUTPUT) < input.txt
 
 clean:
 	rm $(OUTPUT)
