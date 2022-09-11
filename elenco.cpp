@@ -94,11 +94,11 @@ void solve(int i, int count, vector<bool>& actors, vector<int> grupos)
         int bound = bounding(actors, i, count);
 
         if (!Optimality_Cut || bound < opt) {
-            // coloca o ator
+            // subarvore que coloca o ator
             actors[i] = 1;
             solve(i+1, count + 1, actors, grupos);
 
-            // não coloca o ator
+            // subarvore que não coloca o ator
             if (!Optimality_Cut || bound < opt) {
                 actors[i] = 0;
 
@@ -203,7 +203,7 @@ int main(int argc, char * argv[]) {
     sort(out.begin(), out.end());
 
     if (Generate_Report) {
-        cout << "Tempo de execução: " << time << " segundos\n";
+        cout << "Tempo de execução: " << time << " ms\n";
         cout << "Nodos percorridos: " << Nodes_Count << '\n';
         cout << "Cortes por otimalidade: " << O_Cuts << '\n';
         cout << "Cortes por viabilidade: " << V_Cuts << '\n';
