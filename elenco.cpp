@@ -36,7 +36,7 @@ int get_cost(vector<bool>& actors, int to)
 
 
 // bounding do professor
-int bounding_1(vector<bool> actors, int from, int count)
+int bounding_dada(vector<bool> actors, int from, int count)
 {
     int sum = get_cost(actors, from);
 
@@ -47,7 +47,7 @@ int bounding_1(vector<bool> actors, int from, int count)
 
 
 // nosso bounding
-int bounding_2(vector<bool> actors, int from, int count)
+int bounding_melhorada(vector<bool> actors, int from, int count)
 {
     int sum = get_cost(actors, from);
 
@@ -65,12 +65,13 @@ bool is_covered(vector<int> grupos)
     return true;
 }
 
+
 // valores otimos
 int opt = oo;
 vector<bool> x_opt = {};
 
 // funcao de bounding a ser utilizada
-int (*bounding)(vector<bool>, int, int) = bounding_2;
+int (*bounding)(vector<bool>, int, int) = bounding_melhorada;
 
 void solve(int i, int count, vector<bool>& actors, vector<int> grupos)
 {
@@ -137,7 +138,7 @@ void init(int argc, char * argv[])
         break;
     case 'a':
         // usa funcao limitante do professor
-        bounding = bounding_1;
+        bounding = bounding_dada;
         break;
     case 'v':
         // gera relatorio
@@ -163,7 +164,8 @@ int main(int argc, char * argv[]) {
 
     vector<int> Grupos (L, 0);
 
-    if (M < Required) {
+    // verifica se da pra atribuir 1 ator pra cada personagem
+    if (M <= Required) {
         cout << "Inviável\n";
         exit(0);
     }
@@ -178,6 +180,12 @@ int main(int argc, char * argv[]) {
             Grupos[g] += 1;
             Atores[i].grupos.push_back(g);
         }
+    }
+
+    // verifica se tem ao menos 1 ator pra cada grupo
+    if (!is_covered(Grupos)) {
+        cout << "Inviável\n";
+        exit(0);
     }
 
     // ordena o vetor de atores pelo preco do maior pro menor
